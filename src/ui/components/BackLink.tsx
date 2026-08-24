@@ -5,6 +5,7 @@ export function BackLink({ label = "Program" }: { label?: string }) {
   return (
     <Link
       to="/"
+      search={{ program: true }}
       className="inline-flex min-w-0 items-center gap-1 text-muted-foreground transition-colors duration-200 ease-out hover:text-foreground"
     >
       <ChevronLeft className="h-4 w-4 shrink-0" />

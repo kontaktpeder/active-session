@@ -1,60 +1,70 @@
 import { useEffect, useState } from "react";
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { EXERCISE_TYPES } from "../../data/exercises";
 import { WORKOUT_DAYS } from "../../data/program";
 import { formatElapsed, formatLoad } from "../../domain/format";
 import type { WeekdayId, WorkoutDay } from "../../domain/types";
+import { useNow } from "../../hooks/useNow";
 import { getTodayWeekdayId, WEEKDAY_SHORT } from "../../lib/week";
 import { loadSession } from "../../session/storage";
 import { masterElapsedMs } from "../../session/WorkoutSession";
 import type { ActiveSession } from "../../session/types";
 
-export function DashboardScreen() {
+export function DashboardScreen({ stayOnProgram }: { stayOnProgram: boolean }) {
+  const navigate = useNavigate();
   const [todayId, setTodayId] = useState<WeekdayId | null>(null);
   const [live, setLive] = useState<ActiveSession | null>(null);
-  const [now, setNow] = useState(0);
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
+    const stored = loadSession();
+    const active = stored && stored.endedAt === null ? stored : null;
     setTodayId(getTodayWeekdayId());
-    setLive(loadSession());
-    setNow(Date.now());
-  }, []);
+    setLive(active);
 
+    if (active && !stayOnProgram) {
+      void navigate({
+        to: "/okt/$dayId",
+        params: { dayId: active.workoutDayId },
+        replace: true,
+      });
+      return;
+    }
+
+    setReady(true);
+  }, [navigate, stayOnProgram]);
+
+  const now = useNow(ready && live !== null);
   const liveDay = live ? WORKOUT_DAYS.find((day) => day.id === live.workoutDayId) : undefined;
+  const showLive = Boolean(live && liveDay && live.endedAt === null);
+
+  if (!ready) {
+    return (
+      <div className="app px-4">
+        <p className="display pt-7 text-[11px] tracking-[0.28em] text-primary">ØKT</p>
+        {live && liveDay ? (
+          <ResumeCard session={live} day={liveDay} now={Date.now()} />
+        ) : (
+          <p className="mt-4 text-sm text-muted-foreground">Åpner…</p>
+        )}
+      </div>
+    );
+  }
 
   return (
-    <div className="app app-plain px-4">
+    <div className={`app px-4 ${showLive ? "" : "app-plain"}`}>
       <header className="min-w-0 pt-7">
         <p className="display text-[11px] tracking-[0.28em] text-primary">ØKT</p>
         <h1 className="display mt-1 text-5xl leading-none text-foreground">Ukeprogram</h1>
         <p className="mt-2 max-w-full text-sm text-muted-foreground">
-          Velg dag. Økten åpnes med timer, hvile og kø.
+          {showLive
+            ? "Du har en økt som pågår. Fortsett nederst, eller velg en annen dag."
+            : "Velg dag. Økten åpnes med timer, hvile og kø."}
         </p>
       </header>
 
-      {live && liveDay && live.endedAt === null && (
-        <Link
-          to="/okt/$dayId"
-          params={{ dayId: live.workoutDayId }}
-          className="mt-6 flex min-w-0 items-center justify-between gap-3 border border-primary bg-card px-4 py-4"
-        >
-          <span className="min-w-0">
-            <span className="display block text-[11px] tracking-[0.22em] text-primary">
-              Aktiv økt
-            </span>
-            <span className="display mt-1 block truncate text-2xl leading-none text-foreground">
-              {liveDay.weekdayLabel}
-            </span>
-            <span className="mt-1 block font-mono text-sm tabular-nums text-muted-foreground">
-              {formatElapsed(masterElapsedMs(live, now))}
-            </span>
-          </span>
-          <span className="display shrink-0 text-sm tracking-[0.16em] text-primary">
-            Fortsett
-          </span>
-        </Link>
-      )}
+      {showLive && live && liveDay && <ResumeCard session={live} day={liveDay} now={now} />}
 
       <section className="mt-8 min-w-0">
         <h2 className="display text-[11px] tracking-[0.24em] text-muted-foreground">Hele uka</h2>
@@ -82,7 +92,52 @@ export function DashboardScreen() {
           https://repdb.co
         </a>
       </section>
+
+      {showLive && live && liveDay && (
+        <div className="bottom-action">
+          <div className="mx-auto w-full min-w-0 max-w-[430px]">
+            <Link
+              to="/okt/$dayId"
+              params={{ dayId: live.workoutDayId }}
+              className="display flex min-h-14 w-full items-center justify-center bg-primary text-xl tracking-[0.14em] text-primary-foreground"
+            >
+              Fortsett økt · {formatElapsed(masterElapsedMs(live, now))}
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+function ResumeCard({
+  session,
+  day,
+  now,
+}: {
+  session: ActiveSession;
+  day: WorkoutDay;
+  now: number;
+}) {
+  const currentId = session.remainingExerciseIds[0];
+  const current = day.exercises.find((exercise) => exercise.id === currentId);
+  const currentName = current ? EXERCISE_TYPES[current.typeId].name : "Alle øvelser er fullført";
+
+  return (
+    <Link
+      to="/okt/$dayId"
+      params={{ dayId: session.workoutDayId }}
+      className="mt-6 block min-w-0 overflow-hidden border border-primary bg-primary px-4 py-5 text-primary-foreground"
+    >
+      <p className="display text-[11px] tracking-[0.22em] text-primary-foreground/80">Aktiv økt</p>
+      <p className="display mt-2 truncate text-4xl leading-none">{day.weekdayLabel}</p>
+      <p className="mt-2 truncate text-sm">{day.title}</p>
+      <p className="display mt-3 truncate text-lg leading-none">{currentName}</p>
+      <p className="mt-2 font-mono text-sm tabular-nums">
+        {formatElapsed(masterElapsedMs(session, now))}
+      </p>
+      <p className="display mt-4 text-[11px] tracking-[0.2em]">Trykk for å fortsette</p>
+    </Link>
   );
 }
 
@@ -100,7 +155,7 @@ function DayCard({
       to="/okt/$dayId"
       params={{ dayId: day.id }}
       className={`block min-w-0 overflow-hidden border p-4 transition-colors duration-200 ease-out active:bg-accent ${
-        isToday ? "border-primary bg-card" : "border-border bg-card"
+        isLive ? "border-primary bg-card" : isToday ? "border-primary bg-card" : "border-border bg-card"
       }`}
     >
       <div className="flex min-w-0 items-start justify-between gap-3">
@@ -115,7 +170,7 @@ function DayCard({
               </span>
             )}
             {isLive && (
-              <span className="display border border-border px-2 py-0.5 text-[10px] tracking-[0.18em] text-muted-foreground">
+              <span className="display bg-primary px-2 py-0.5 text-[10px] tracking-[0.18em] text-primary-foreground">
                 Pågår
               </span>
             )}

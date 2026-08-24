@@ -1,7 +1,18 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { DashboardScreen } from "../ui/screens/DashboardScreen";
 
+type DashboardSearch = {
+  program?: boolean;
+};
+
 export const Route = createFileRoute("/")({
+  validateSearch: (raw: Record<string, unknown>): DashboardSearch => {
+    const value = raw["program"];
+    if (value === true || value === "true" || value === "1") {
+      return { program: true };
+    }
+    return {};
+  },
   head: () => ({
     meta: [
       { title: "ØKT – Ukeprogram" },
@@ -23,5 +34,10 @@ export const Route = createFileRoute("/")({
       { rel: "apple-touch-icon", href: "/icons/icon-192.png" },
     ],
   }),
-  component: DashboardScreen,
+  component: DashboardRoute,
 });
+
+function DashboardRoute() {
+  const search = Route.useSearch();
+  return <DashboardScreen stayOnProgram={search.program === true} />;
+}
