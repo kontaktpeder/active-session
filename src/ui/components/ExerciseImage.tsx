@@ -6,11 +6,13 @@ export function ExerciseImage({
   alt,
   priority = false,
   onOpen,
+  fill = false,
 }: {
   src: string;
   alt: string;
   priority?: boolean;
   onOpen?: () => void;
+  fill?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -21,7 +23,11 @@ export function ExerciseImage({
       <button
         type="button"
         onClick={() => (onOpen ? onOpen() : setOpen(true))}
-        className="block w-full min-w-0 overflow-hidden border border-border bg-card"
+        className={
+          fill
+            ? "flex h-full min-h-0 w-full min-w-0 items-center justify-center overflow-hidden border border-border bg-card"
+            : "block w-full min-w-0 overflow-hidden border border-border bg-card"
+        }
         aria-label={onOpen ? `Hvordan og hvorfor: ${alt}` : `Vis ${alt} større`}
       >
         <img
@@ -31,7 +37,11 @@ export function ExerciseImage({
           fetchPriority={priority ? "high" : "auto"}
           decoding={priority ? "sync" : "async"}
           onError={() => setFailed(true)}
-          className="aspect-[4/3] h-auto w-full max-w-full object-contain"
+          className={
+            fill
+              ? "h-full w-full object-contain"
+              : "aspect-[4/3] h-auto w-full max-w-full object-contain"
+          }
         />
       </button>
 

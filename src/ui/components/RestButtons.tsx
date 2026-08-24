@@ -13,9 +13,9 @@ export function RestButtons({
 }) {
   if (restEndsAt && restEndsAt > now) {
     return (
-      <div className="min-w-0 border border-border bg-card p-4">
+      <div className="min-w-0 border border-border bg-card p-3">
         <div className="display text-[11px] tracking-[0.2em] text-muted-foreground">Hvile</div>
-        <div className="mt-1 font-mono text-4xl font-semibold tabular-nums text-primary">
+        <div className="mt-0.5 font-mono text-3xl font-semibold tabular-nums text-primary">
           {formatCountdown(restEndsAt - now)}
         </div>
         <button
@@ -36,7 +36,7 @@ export function RestButtons({
           key={minutes}
           type="button"
           onClick={() => onStart(minutes)}
-          className="display min-h-14 min-w-0 border border-border bg-card text-base tracking-[0.08em] text-foreground transition-colors duration-200 ease-out active:bg-accent"
+          className="display min-h-12 min-w-0 border border-border bg-card text-sm tracking-[0.08em] text-foreground transition-colors duration-200 ease-out active:bg-accent"
         >
           {minutes} min
         </button>

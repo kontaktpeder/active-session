@@ -153,6 +153,20 @@ html[data-sheet-open] .app {
   padding-bottom: calc(28px + env(safe-area-inset-bottom));
 }
 
+.app-session {
+  height: 100%;
+  width: 100%;
+  max-width: 430px;
+  min-width: 0;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  overscroll-behavior: none;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
 .bottom-action {
   position: fixed;
   left: 0;

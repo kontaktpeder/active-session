@@ -69,31 +69,34 @@ export function ActiveSessionScreen({
   const showUndo = session.undo !== null && now < session.undo.expiresAt;
 
   return (
-    <div className="app px-4">
-      <header className="flex min-w-0 items-start justify-between gap-3 pt-5">
+    <div className="app-session px-4">
+      <header className="flex shrink-0 items-start justify-between gap-3 pt-3">
         <div className="min-w-0">
           <BackLink />
-          <p className="display mt-3 truncate text-[11px] tracking-[0.24em] text-muted-foreground">
+          <p className="display mt-1 truncate text-[11px] tracking-[0.24em] text-muted-foreground">
             {day.weekdayLabel}
           </p>
-          <h1 className="display truncate text-2xl leading-none text-foreground">{day.title}</h1>
+          <h1 className="display truncate text-xl leading-none text-foreground">{day.title}</h1>
         </div>
         <MasterTimer elapsedMs={elapsedMs} />
       </header>
 
-      <section className="mt-5 min-w-0">
-        <ExerciseImage
-          src={type.imagePath}
-          alt={type.name}
-          priority
-          onOpen={() => setInfoOpen(true)}
-        />
-        <h2 className="display mt-4 truncate text-4xl leading-none text-foreground">{type.name}</h2>
-        <p className="mt-1 truncate text-lg text-muted-foreground">{formatLoad(exercise.load)}</p>
+      <section className="mt-3 flex min-h-0 flex-1 flex-col">
+        <div className="min-h-[7.5rem] flex-1">
+          <ExerciseImage
+            src={type.imagePath}
+            alt={type.name}
+            priority
+            fill
+            onOpen={() => setInfoOpen(true)}
+          />
+        </div>
+        <h2 className="display mt-2 truncate text-3xl leading-none text-foreground">{type.name}</h2>
+        <p className="mt-0.5 truncate text-base text-muted-foreground">{formatLoad(exercise.load)}</p>
       </section>
 
       {exercise.load.kind === "activityTimer" && (
-        <div className="mt-4 min-w-0">
+        <div className="mt-3 shrink-0">
           <StretchingTimer
             state={session.activityTimerState}
             minutes={exercise.load.minutes}
@@ -108,12 +111,12 @@ export function ActiveSessionScreen({
       )}
 
       {session.missedRestCue && (
-        <p className="display mt-4 border border-primary bg-card p-4 text-center text-xl text-primary">
+        <p className="display mt-2 shrink-0 border border-primary bg-card p-3 text-center text-lg text-primary">
           Start neste sett
         </p>
       )}
 
-      <div className="mt-4 min-w-0">
+      <div className="mt-3 shrink-0">
         <RestButtons
           restEndsAt={session.restEndsAt}
           now={now}
@@ -122,20 +125,14 @@ export function ActiveSessionScreen({
         />
       </div>
 
-      {next && (
-        <p className="mt-4 min-w-0 truncate text-sm text-muted-foreground">
-          Neste: {EXERCISE_TYPES[next.typeId].name} · {formatLoad(next.load)}
-        </p>
-      )}
-
-      <div className="mt-4 flex min-w-0 items-center justify-between gap-3">
+      <div className="mt-2 flex shrink-0 items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => {
             setInfoOpen(false);
             setSheetOpen(true);
           }}
-          className="display min-h-11 border border-border bg-card px-4 text-sm tracking-[0.14em] text-foreground"
+          className="display min-h-10 border border-border bg-card px-3 text-sm tracking-[0.14em] text-foreground"
         >
           Hele økten
         </button>
@@ -144,15 +141,21 @@ export function ActiveSessionScreen({
           onClick={onReset}
           className="truncate text-sm text-muted-foreground underline underline-offset-4"
         >
-          Nullstill aktiv økt
+          Nullstill
         </button>
       </div>
+
+      {next && (
+        <p className="mt-1 shrink-0 min-w-0 truncate text-sm text-muted-foreground">
+          Neste: {EXERCISE_TYPES[next.typeId].name} · {formatLoad(next.load)}
+        </p>
+      )}
 
       {showUndo && (
         <button
           type="button"
           onClick={onUndo}
-          className="mt-4 w-full border border-border bg-card p-3 text-sm font-semibold text-foreground"
+          className="mt-2 w-full shrink-0 border border-border bg-card p-2 text-sm font-semibold text-foreground"
         >
           Angre siste «Øvelse ferdig»
         </button>
@@ -178,7 +181,9 @@ export function ActiveSessionScreen({
         />
       )}
 
-      <BottomAction onClick={onComplete}>Øvelse ferdig</BottomAction>
+      <BottomAction placement="session" onClick={onComplete}>
+        Øvelse ferdig
+      </BottomAction>
     </div>
   );
 }

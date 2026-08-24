@@ -7,7 +7,7 @@ export function BottomAction({
 }: {
   children: ReactNode;
   onClick: () => void;
-  placement?: "page" | "sheet";
+  placement?: "page" | "sheet" | "session";
 }) {
   const button = (
     <button
@@ -25,6 +25,10 @@ export function BottomAction({
         {button}
       </div>
     );
+  }
+
+  if (placement === "session") {
+    return <div className="shrink-0 pt-3">{button}</div>;
   }
 
   return (

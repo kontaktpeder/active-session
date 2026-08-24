@@ -14,9 +14,9 @@ export function StretchingTimer({
 }) {
   if (state.kind === "running") {
     return (
-      <div className="min-w-0 border border-border bg-card p-4 text-center">
+      <div className="min-w-0 border border-border bg-card p-3 text-center">
         <div className="display text-[11px] tracking-[0.2em] text-muted-foreground">Stretching</div>
-        <div className="mt-1 font-mono text-4xl font-semibold tabular-nums text-primary">
+        <div className="mt-0.5 font-mono text-3xl font-semibold tabular-nums text-primary">
           {formatCountdown(state.endsAt - now)}
         </div>
       </div>
@@ -35,7 +35,7 @@ export function StretchingTimer({
     <button
       type="button"
       onClick={onStart}
-      className="display min-h-14 w-full min-w-0 border border-border bg-card text-base tracking-[0.08em] text-foreground transition-colors duration-200 ease-out active:bg-accent"
+      className="display min-h-12 w-full min-w-0 border border-border bg-card text-sm tracking-[0.08em] text-foreground transition-colors duration-200 ease-out active:bg-accent"
     >
       Start {minutes} min stretching
     </button>
