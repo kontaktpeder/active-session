@@ -166,7 +166,7 @@ function DayCard({
     <Link
       to="/okt/$dayId"
       params={{ dayId: day.id }}
-      className={`block min-w-0 overflow-hidden border p-4 transition-colors duration-200 ease-out active:bg-accent ${
+      className={`block min-w-0 overflow-hidden border p-4 transition-colors duration-200 ease-out ${
         isLive ? "border-primary bg-card" : isToday ? "border-primary bg-card" : "border-border bg-card"
       }`}
     >
@@ -187,9 +187,6 @@ function DayCard({
               </span>
             )}
           </div>
-          <h3 className="display mt-2 truncate text-xl leading-none text-foreground">
-            {day.weekdayLabel}
-          </h3>
           <p className="mt-1 truncate text-sm text-muted-foreground">{day.title}</p>
         </div>
         <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
