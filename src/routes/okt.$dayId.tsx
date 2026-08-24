@@ -34,7 +34,7 @@ function OktPage() {
     <SessionApp
       dayId={dayId}
       onLeave={() => {
-        void navigate({ to: "/" });
+        void navigate({ to: "/", search: { program: true } });
       }}
     />
   );

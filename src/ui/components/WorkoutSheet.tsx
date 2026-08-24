@@ -1,53 +1,44 @@
 import { useEffect, useRef } from "react";
-import {
-  Drawer,
-  DrawerClose,
-  DrawerContent,
-  DrawerDescription,
-  DrawerFooter,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
 import { formatLoad } from "../../domain/format";
 import { EXERCISE_TYPES } from "../../data/exercises";
 import type { WorkoutDay } from "../../domain/types";
+import { AppSheet, SheetBody } from "./AppSheet";
 
 export function WorkoutSheet({
-  open,
   day,
   activeId,
   completedIds,
   onSelect,
-  onOpenChange,
+  onClose,
 }: {
-  open: boolean;
   day: WorkoutDay;
   activeId: string | undefined;
   completedIds: string[];
   onSelect: (id: string) => void;
-  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
 }) {
   const activeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (!open) return;
     const frame = window.requestAnimationFrame(() => {
       activeRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
     });
     return () => window.cancelAnimationFrame(frame);
-  }, [open, activeId]);
+  }, [activeId]);
 
   return (
-    <Drawer open={open} onOpenChange={onOpenChange}>
-      <DrawerContent className="h-[85dvh]">
-        <DrawerHeader>
-          <DrawerTitle>Hele økten</DrawerTitle>
-          <DrawerDescription>
-            {day.weekdayLabel} · {day.title}. Dra ned for å lukke.
-          </DrawerDescription>
-        </DrawerHeader>
-
-        <ul className="scroll-touch min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-3">
+    <AppSheet
+      onClose={onClose}
+      detents={["half", "full"]}
+      initialDetent="half"
+      zClassName="z-[55]"
+    >
+      <SheetBody>
+        <h2 className="display pt-1 text-3xl text-foreground">Hele økten</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {day.weekdayLabel} · {day.title}. Sveip ned for å lukke.
+        </p>
+        <ul className="mt-4 min-w-0 space-y-2 pb-4">
           {day.exercises.map((exercise) => {
             const done = completedIds.includes(exercise.id);
             const active = exercise.id === activeId;
@@ -83,18 +74,7 @@ export function WorkoutSheet({
             );
           })}
         </ul>
-
-        <DrawerFooter>
-          <DrawerClose asChild>
-            <button
-              type="button"
-              className="display min-h-14 w-full border border-border bg-card text-lg tracking-[0.14em] text-foreground"
-            >
-              Lukk
-            </button>
-          </DrawerClose>
-        </DrawerFooter>
-      </DrawerContent>
-    </Drawer>
+      </SheetBody>
+    </AppSheet>
   );
 }

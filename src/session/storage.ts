@@ -17,7 +17,8 @@ export function saveSession(session: ActiveSession | null) {
   if (typeof window === "undefined") return;
   if (!session) {
     window.localStorage.removeItem(SESSION_STORAGE_KEY);
-    return;
+  } else {
+    window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
   }
-  window.localStorage.setItem(SESSION_STORAGE_KEY, JSON.stringify(session));
+  window.dispatchEvent(new Event("okt-session"));
 }

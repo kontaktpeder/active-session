@@ -18,21 +18,33 @@ export function DashboardScreen({ stayOnProgram }: { stayOnProgram: boolean }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const stored = loadSession();
-    const active = stored && stored.endedAt === null ? stored : null;
-    setTodayId(getTodayWeekdayId());
-    setLive(active);
+    const apply = () => {
+      const stored = loadSession();
+      const active = stored && stored.endedAt === null ? stored : null;
+      setTodayId(getTodayWeekdayId());
+      setLive(active);
+      return active;
+    };
 
+    const active = apply();
     if (active && !stayOnProgram) {
       void navigate({
         to: "/okt/$dayId",
         params: { dayId: active.workoutDayId },
         replace: true,
       });
-      return;
     }
-
     setReady(true);
+
+    const onSession = () => {
+      apply();
+    };
+    window.addEventListener("okt-session", onSession);
+    window.addEventListener("storage", onSession);
+    return () => {
+      window.removeEventListener("okt-session", onSession);
+      window.removeEventListener("storage", onSession);
+    };
   }, [navigate, stayOnProgram]);
 
   const now = useNow(ready && live !== null);

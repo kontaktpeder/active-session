@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Drawer,
-  DrawerContent,
-  DrawerDescription,
-  DrawerHeader,
-  DrawerTitle,
-} from "@/components/ui/drawer";
+import { AppSheet, SheetBody } from "./AppSheet";
 
 export function ExerciseImage({
   src,
@@ -39,26 +33,21 @@ export function ExerciseImage({
         />
       </button>
 
-      <Drawer open={open} onOpenChange={setOpen}>
-        <DrawerContent className="h-auto max-h-[88dvh]">
-          <DrawerHeader className="sr-only">
-            <DrawerTitle>{alt}</DrawerTitle>
-            <DrawerDescription>Dra ned eller trykk utenfor for å lukke.</DrawerDescription>
-          </DrawerHeader>
-          <button
-            type="button"
-            onClick={() => setOpen(false)}
-            className="flex min-h-0 flex-1 items-center justify-center px-4 pb-6 pt-2"
-            aria-label="Lukk bilde"
-          >
-            <img
-              src={imageSrc}
-              alt=""
-              className="max-h-[70dvh] w-full object-contain"
-            />
-          </button>
-        </DrawerContent>
-      </Drawer>
+      {open && (
+        <AppSheet onClose={() => setOpen(false)} size="hug" nest zClassName="z-[55]">
+          <SheetBody>
+            <p className="display sr-only">{alt}</p>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="flex w-full items-center justify-center pb-6 pt-1"
+              aria-label="Lukk bilde"
+            >
+              <img src={imageSrc} alt="" className="max-h-[70dvh] w-full object-contain" />
+            </button>
+          </SheetBody>
+        </AppSheet>
+      )}
     </>
   );
 }

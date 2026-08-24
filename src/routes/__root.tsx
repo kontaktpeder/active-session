@@ -4,10 +4,12 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { DashboardScreen } from "../ui/screens/DashboardScreen";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -117,10 +119,24 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { showWeekCanvas, stayOnProgram } = useRouterState({
+    select: (state) => {
+      const pathname = state.location.pathname;
+      const search = state.location.search as { program?: boolean | string };
+      return {
+        showWeekCanvas: pathname === "/" || pathname.startsWith("/okt/"),
+        stayOnProgram:
+          pathname.startsWith("/okt/") ||
+          search?.program === true ||
+          search?.program === "true",
+      };
+    },
+  });
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div data-vaul-drawer-wrapper="" className="h-full overflow-hidden bg-background">
+      <div data-app-shell className="h-full overflow-hidden bg-background">
+        {showWeekCanvas && <DashboardScreen stayOnProgram={stayOnProgram} />}
         <Outlet />
       </div>
     </QueryClientProvider>

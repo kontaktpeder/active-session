@@ -1,5 +1,4 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { DashboardScreen } from "../ui/screens/DashboardScreen";
 
 type DashboardSearch = {
   program?: boolean;
@@ -38,6 +37,5 @@ export const Route = createFileRoute("/")({
 });
 
 function DashboardRoute() {
-  const search = Route.useSearch();
-  return <DashboardScreen stayOnProgram={search.program === true} />;
+  return null;
 }

@@ -24,6 +24,7 @@ import { ActiveSessionScreen } from "./screens/ActiveSessionScreen";
 import { CompletedScreen } from "./screens/CompletedScreen";
 import { PreSessionScreen } from "./screens/PreSessionScreen";
 import { SummaryScreen } from "./screens/SummaryScreen";
+import { AppSheet, SheetBody } from "./components/AppSheet";
 import { RestOverlay, restOverlayLabel } from "./components/RestOverlay";
 
 interface Summary {
@@ -87,9 +88,26 @@ export function SessionApp({ dayId, onLeave }: { dayId: WeekdayId; onLeave: () =
     update(startSession(day));
   };
 
-  if (summary) {
+  const elapsedMs = session ? masterElapsedMs(session, now) : 0;
+  const restLabel =
+    session ? restOverlayLabel(session.restEndsAt, now, visible, "START") : null;
+  const timer = session?.activityTimerState;
+  const stretchLabel =
+    timer?.kind === "running"
+      ? restOverlayLabel(timer.endsAt, now, visible, "STRETCHING FERDIG")
+      : null;
+  const overlayLabel = restLabel ?? stretchLabel;
+
+  let body;
+  if (!hydrated) {
+    body = (
+      <SheetBody>
+        <p className="pt-2 text-sm text-muted-foreground">Åpner…</p>
+      </SheetBody>
+    );
+  } else if (summary) {
     const summaryDay = WORKOUT_DAYS.find((item) => item.id === summary.dayId)!;
-    return (
+    body = (
       <SummaryScreen
         weekdayLabel={summaryDay.weekdayLabel}
         title={summaryDay.title}
@@ -98,10 +116,8 @@ export function SessionApp({ dayId, onLeave }: { dayId: WeekdayId; onLeave: () =
         onClose={onLeave}
       />
     );
-  }
-
-  if (!session) {
-    return (
+  } else if (!session) {
+    body = (
       <PreSessionScreen
         day={day}
         conflictLabel={
@@ -113,12 +129,8 @@ export function SessionApp({ dayId, onLeave }: { dayId: WeekdayId; onLeave: () =
         onStart={startThisDay}
       />
     );
-  }
-
-  const elapsedMs = masterElapsedMs(session, now);
-
-  if (isAllDone(session)) {
-    return (
+  } else if (isAllDone(session)) {
+    body = (
       <CompletedScreen
         elapsedMs={elapsedMs}
         onEnd={() => {
@@ -132,19 +144,8 @@ export function SessionApp({ dayId, onLeave }: { dayId: WeekdayId; onLeave: () =
         }}
       />
     );
-  }
-
-  const restLabel = restOverlayLabel(session.restEndsAt, now, visible, "START");
-  const timer = session.activityTimerState;
-  const stretchLabel =
-    timer.kind === "running"
-      ? restOverlayLabel(timer.endsAt, now, visible, "STRETCHING FERDIG")
-      : null;
-  const overlayLabel = restLabel ?? stretchLabel;
-
-  return (
-    <>
-      {overlayLabel && <RestOverlay label={overlayLabel} />}
+  } else {
+    body = (
       <ActiveSessionScreen
         day={day}
         session={session}
@@ -162,6 +163,13 @@ export function SessionApp({ dayId, onLeave }: { dayId: WeekdayId; onLeave: () =
           }
         }}
       />
+    );
+  }
+
+  return (
+    <>
+      <AppSheet onClose={onLeave}>{body}</AppSheet>
+      {overlayLabel && <RestOverlay label={overlayLabel} />}
     </>
   );
 }
