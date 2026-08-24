@@ -7,6 +7,10 @@ export function jumpToExercise(remaining: string[], targetId: string): string[] 
   if (idx < 0) return remaining;
 
   const selected = remaining[idx]!;
+  const skipped = remaining.slice(0, idx);
+  const after = remaining.slice(idx + 1);
+  return [selected, ...skipped, ...after];
+
 
 }
 
