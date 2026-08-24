@@ -187,9 +187,6 @@ function DayCard({
               </span>
             )}
           </div>
-          <h3 className="display mt-2 truncate text-xl leading-none text-foreground">
-            {day.weekdayLabel}
-          </h3>
           <p className="mt-1 truncate text-sm text-muted-foreground">{day.title}</p>
         </div>
         <ArrowRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
