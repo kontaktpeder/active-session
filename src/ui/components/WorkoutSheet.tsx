@@ -16,20 +16,21 @@ export function WorkoutSheet({
   onClose: () => void;
 }) {
   return (
-    <div className="fixed inset-0 z-50 flex flex-col bg-background/95">
-      <div className="mx-auto w-full max-w-[430px] flex-1 overflow-y-auto px-4 pb-28 pt-[calc(env(safe-area-inset-top)+16px)]">
-        <h2 className="text-xl font-semibold text-foreground">Hele økten</h2>
-        <ul className="mt-4 space-y-2">
-          {day.exercises.map((ex) => {
-            const done = completedIds.includes(ex.id);
-            const active = ex.id === activeId;
+    <div className="fixed inset-0 z-50 flex min-w-0 flex-col overflow-x-clip bg-background/95">
+      <div className="mx-auto w-full min-w-0 max-w-[430px] flex-1 overflow-x-clip overflow-y-auto px-4 pb-28 pt-[calc(env(safe-area-inset-top)+16px)]">
+        <h2 className="display text-3xl text-foreground">Hele økten</h2>
+        <ul className="mt-4 min-w-0 space-y-2">
+          {day.exercises.map((exercise) => {
+            const done = completedIds.includes(exercise.id);
+            const active = exercise.id === activeId;
+            const type = EXERCISE_TYPES[exercise.typeId];
             return (
-              <li key={ex.id}>
+              <li key={exercise.id} className="min-w-0">
                 <button
                   type="button"
                   disabled={done}
-                  onClick={() => onSelect(ex.id)}
-                  className={`flex w-full items-center justify-between gap-3 rounded-2xl border p-4 text-left transition-colors duration-200 ease-out ${
+                  onClick={() => onSelect(exercise.id)}
+                  className={`flex w-full min-w-0 items-center justify-between gap-3 border p-4 text-left transition-colors duration-200 ease-out ${
                     active
                       ? "border-primary bg-card"
                       : done
@@ -37,15 +38,15 @@ export function WorkoutSheet({
                         : "border-border bg-card active:bg-accent"
                   }`}
                 >
-                  <span>
-                    <span className="block font-medium text-foreground">
-                      {EXERCISE_TYPES[ex.typeId].name}
+                  <span className="min-w-0">
+                    <span className="display block truncate text-base text-foreground">
+                      {type.name}
                     </span>
-                    <span className="block text-sm text-muted-foreground">
-                      {formatLoad(ex.load)}
+                    <span className="block truncate text-sm text-muted-foreground">
+                      {formatLoad(exercise.load)}
                     </span>
                   </span>
-                  <span className="text-xs uppercase tracking-widest text-muted-foreground">
+                  <span className="display shrink-0 text-[11px] tracking-[0.16em] text-muted-foreground">
                     {done ? "Ferdig" : active ? "Aktiv" : ""}
                   </span>
                 </button>
@@ -55,11 +56,11 @@ export function WorkoutSheet({
         </ul>
       </div>
       <div className="bottom-action">
-        <div className="mx-auto w-full max-w-[430px]">
+        <div className="mx-auto w-full min-w-0 max-w-[430px]">
           <button
             type="button"
             onClick={onClose}
-            className="min-h-14 w-full rounded-2xl border border-border bg-card text-lg font-semibold text-foreground"
+            className="display min-h-14 w-full border border-border bg-card text-lg tracking-[0.14em] text-foreground"
           >
             Lukk
           </button>

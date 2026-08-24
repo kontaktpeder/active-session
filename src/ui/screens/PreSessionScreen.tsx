@@ -1,76 +1,82 @@
-import { formatLoad } from "../../domain/format";
+import { Link } from "@tanstack/react-router";
 import { EXERCISE_TYPES } from "../../data/exercises";
-import { WORKOUT_DAYS } from "../../data/program";
+import { formatLoad } from "../../domain/format";
 import type { WeekdayId, WorkoutDay } from "../../domain/types";
+import { BackLink } from "../components/BackLink";
 import { BottomAction } from "../components/BottomAction";
 
 export function PreSessionScreen({
   day,
-  onSelectDay,
+  conflictLabel,
+  conflictDayId,
   onStart,
 }: {
   day: WorkoutDay;
-  onSelectDay: (id: WeekdayId) => void;
+  conflictLabel?: string | undefined;
+  conflictDayId?: WeekdayId | undefined;
   onStart: () => void;
 }) {
   return (
     <div className="app px-4">
-      <header className="pt-6">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">ØKT</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+      <header className="min-w-0 pt-5">
+        <BackLink />
+        <p className="display mt-5 text-[11px] tracking-[0.28em] text-primary">Økt</p>
+        <h1 className="display mt-1 truncate text-5xl leading-none text-foreground">
           {day.weekdayLabel}
         </h1>
-        <p className="text-lg text-muted-foreground">{day.title}</p>
+        <p className="mt-1 truncate text-lg text-muted-foreground">{day.title}</p>
       </header>
 
-      <nav className="-mx-4 mt-5 overflow-x-auto px-4" aria-label="Velg dag">
-        <div className="flex gap-2">
-          {WORKOUT_DAYS.map((d) => (
-            <button
-              key={d.id}
-              type="button"
-              onClick={() => onSelectDay(d.id)}
-              className={`shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors duration-200 ease-out ${
-                d.id === day.id
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border bg-card text-muted-foreground"
-              }`}
-            >
-              {d.weekdayLabel.slice(0, 3)}
-            </button>
-          ))}
-        </div>
-      </nav>
+      {conflictLabel && conflictDayId && (
+        <Link
+          to="/okt/$dayId"
+          params={{ dayId: conflictDayId }}
+          className="mt-5 block min-w-0 border border-border bg-card px-4 py-3"
+        >
+          <p className="display text-[11px] tracking-[0.18em] text-muted-foreground">Aktiv økt</p>
+          <p className="mt-1 truncate text-sm text-foreground">
+            Fortsett {conflictLabel} i stedet, eller start denne dagen.
+          </p>
+        </Link>
+      )}
 
       {day.isRestDay ? (
-        <div className="mt-8 rounded-2xl border border-border bg-card p-6 text-center">
-          <p className="text-xl font-semibold text-foreground">Hviledag</p>
-          <p className="mt-2 text-sm text-muted-foreground">Ingen økt i dag. Velg en annen dag.</p>
+        <div className="mt-8 border border-border bg-card p-6 text-center">
+          <p className="display text-3xl text-foreground">Hviledag</p>
+          <p className="mt-2 text-sm text-muted-foreground">Ingen økt i dag. Gå tilbake og velg en treningsdag.</p>
         </div>
       ) : (
         <>
-          <ul className="mt-6 space-y-2">
-            {day.exercises.map((ex) => (
-              <li
-                key={ex.id}
-                className="flex items-center gap-3 rounded-2xl border border-border bg-card p-4"
-              >
-                <img
-                  src={EXERCISE_TYPES[ex.typeId].imagePath}
-                  alt=""
-                  className="h-12 w-12 shrink-0 object-contain"
-                  onError={(e) => {
-                    e.currentTarget.src = "/fallback.svg";
-                  }}
-                />
-                <span>
-                  <span className="block font-medium text-foreground">
-                    {EXERCISE_TYPES[ex.typeId].name}
+          <ul className="mt-6 min-w-0 space-y-2">
+            {day.exercises.map((exercise, index) => {
+              const type = EXERCISE_TYPES[exercise.typeId];
+              return (
+                <li
+                  key={exercise.id}
+                  className="flex min-w-0 items-center gap-3 border border-border bg-card p-3"
+                >
+                  <span className="w-6 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
-                  <span className="block text-sm text-muted-foreground">{formatLoad(ex.load)}</span>
-                </span>
-              </li>
-            ))}
+                  <img
+                    src={type.imagePath}
+                    alt=""
+                    className="h-11 w-11 shrink-0 object-contain"
+                    onError={(event) => {
+                      event.currentTarget.src = "/fallback.svg";
+                    }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="display block truncate text-base leading-tight text-foreground">
+                      {type.name}
+                    </span>
+                    <span className="block truncate text-sm text-muted-foreground">
+                      {formatLoad(exercise.load)}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
           </ul>
           <BottomAction onClick={onStart}>Start økt</BottomAction>
         </>

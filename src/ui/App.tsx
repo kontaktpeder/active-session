@@ -3,6 +3,7 @@ import { WORKOUT_DAYS } from "../data/program";
 import type { WeekdayId } from "../domain/types";
 import { useNow } from "../hooks/useNow";
 import { useVisibility } from "../hooks/useVisibility";
+import { getWorkoutDay } from "../lib/week";
 import { loadSession, saveSession } from "../session/storage";
 import type { ActiveSession } from "../session/types";
 import {
@@ -25,40 +26,28 @@ import { PreSessionScreen } from "./screens/PreSessionScreen";
 import { SummaryScreen } from "./screens/SummaryScreen";
 import { RestOverlay, restOverlayLabel } from "./components/RestOverlay";
 
-const WEEKDAY_BY_INDEX: WeekdayId[] = [
-  "sunday",
-  "monday",
-  "tuesday",
-  "wednesday",
-  "thursday",
-  "friday",
-  "saturday",
-];
-
 interface Summary {
   dayId: WeekdayId;
   completed: number;
   elapsedMs: number;
 }
 
-export function App() {
+export function SessionApp({ dayId, onLeave }: { dayId: WeekdayId; onLeave: () => void }) {
   const [hydrated, setHydrated] = useState(false);
   const [session, setSession] = useState<ActiveSession | null>(null);
-  const [selectedDayId, setSelectedDayId] = useState<WeekdayId>("monday");
   const [summary, setSummary] = useState<Summary | null>(null);
 
   const { visible, wasHiddenRef } = useVisibility();
 
   useEffect(() => {
     const stored = loadSession();
-    if (stored && stored.endedAt === null) {
+    if (stored && stored.endedAt === null && stored.workoutDayId === dayId) {
       setSession(stored);
-      setSelectedDayId(stored.workoutDayId);
     } else {
-      setSelectedDayId(WEEKDAY_BY_INDEX[new Date().getDay()] ?? "monday");
+      setSession(null);
     }
     setHydrated(true);
-  }, []);
+  }, [dayId]);
 
   const update = useCallback((next: ActiveSession | null) => {
     setSession(next);
@@ -67,7 +56,6 @@ export function App() {
 
   const now = useNow(hydrated && session !== null);
 
-  // Hvile og aktivitetstimer avstemmes mot klokka, aldri mot tellere.
   useEffect(() => {
     if (!session) return;
     let next = session;
@@ -80,33 +68,49 @@ export function App() {
     if (next !== session) update(next);
   }, [now, session, update, wasHiddenRef]);
 
-  const day = useMemo(
-    () => WORKOUT_DAYS.find((d) => d.id === (session?.workoutDayId ?? selectedDayId))!,
-    [session, selectedDayId],
-  );
+  const day = useMemo(() => getWorkoutDay(dayId), [dayId]);
+  const foreignSession = useMemo(() => {
+    if (typeof window === "undefined" || !hydrated) return null;
+    const stored = loadSession();
+    if (stored && stored.endedAt === null && stored.workoutDayId !== dayId) return stored;
+    return null;
+  }, [dayId, hydrated, session]);
 
-  if (!hydrated) return <div className="app" />;
+  const startThisDay = () => {
+    if (foreignSession) {
+      const other = WORKOUT_DAYS.find((item) => item.id === foreignSession.workoutDayId);
+      const ok = window.confirm(
+        `Du har en uferdig økt (${other?.weekdayLabel ?? "annen dag"}). Starte ${day.weekdayLabel} likevel? Den andre økten slettes.`,
+      );
+      if (!ok) return;
+    }
+    update(startSession(day));
+  };
 
   if (summary) {
-    const sDay = WORKOUT_DAYS.find((d) => d.id === summary.dayId)!;
+    const summaryDay = WORKOUT_DAYS.find((item) => item.id === summary.dayId)!;
     return (
       <SummaryScreen
-        weekdayLabel={sDay.weekdayLabel}
-        title={sDay.title}
+        weekdayLabel={summaryDay.weekdayLabel}
+        title={summaryDay.title}
         completed={summary.completed}
         elapsedMs={summary.elapsedMs}
-        onClose={() => setSummary(null)}
+        onClose={onLeave}
       />
     );
   }
 
   if (!session) {
-    const preDay = WORKOUT_DAYS.find((d) => d.id === selectedDayId)!;
     return (
       <PreSessionScreen
-        day={preDay}
-        onSelectDay={setSelectedDayId}
-        onStart={() => update(startSession(preDay))}
+        day={day}
+        conflictLabel={
+          foreignSession
+            ? WORKOUT_DAYS.find((item) => item.id === foreignSession.workoutDayId)?.weekdayLabel
+            : undefined
+        }
+        conflictDayId={foreignSession?.workoutDayId}
+        onStart={startThisDay}
       />
     );
   }
@@ -146,9 +150,9 @@ export function App() {
         session={session}
         now={now}
         elapsedMs={elapsedMs}
-        onStartRest={(m) => update(startRest(session, m))}
+        onStartRest={(minutes) => update(startRest(session, minutes))}
         onCancelRest={() => update(clearRest(session))}
-        onStartActivityTimer={(m) => update(startActivityTimer(session, m))}
+        onStartActivityTimer={(minutes) => update(startActivityTimer(session, minutes))}
         onComplete={() => update(completeExercise(session))}
         onUndo={() => update(undoComplete(session))}
         onJump={(id) => update(jump(session, id))}

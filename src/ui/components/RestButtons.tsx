@@ -13,15 +13,15 @@ export function RestButtons({
 }) {
   if (restEndsAt && restEndsAt > now) {
     return (
-      <div className="rounded-2xl border border-border bg-card p-4">
-        <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">Hvile</div>
+      <div className="min-w-0 border border-border bg-card p-4">
+        <div className="display text-[11px] tracking-[0.2em] text-muted-foreground">Hvile</div>
         <div className="mt-1 font-mono text-4xl font-semibold tabular-nums text-primary">
           {formatCountdown(restEndsAt - now)}
         </div>
         <button
           type="button"
           onClick={onCancel}
-          className="mt-3 text-sm font-medium text-muted-foreground underline underline-offset-4"
+          className="mt-3 text-sm font-semibold text-muted-foreground underline underline-offset-4"
         >
           Avbryt hvile
         </button>
@@ -30,15 +30,15 @@ export function RestButtons({
   }
 
   return (
-    <div className="grid grid-cols-3 gap-2">
-      {[1, 2, 3].map((m) => (
+    <div className="grid min-w-0 grid-cols-3 gap-2">
+      {[1, 2, 3].map((minutes) => (
         <button
-          key={m}
+          key={minutes}
           type="button"
-          onClick={() => onStart(m)}
-          className="min-h-14 rounded-2xl border border-border bg-card text-base font-semibold text-foreground transition-colors duration-200 ease-out active:bg-accent"
+          onClick={() => onStart(minutes)}
+          className="display min-h-14 min-w-0 border border-border bg-card text-base tracking-[0.08em] text-foreground transition-colors duration-200 ease-out active:bg-accent"
         >
-          {m} min
+          {minutes} min
         </button>
       ))}
     </div>

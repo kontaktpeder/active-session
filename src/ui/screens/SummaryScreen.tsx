@@ -1,4 +1,5 @@
 import { formatElapsed } from "../../domain/format";
+import { BackLink } from "../components/BackLink";
 import { BottomAction } from "../components/BottomAction";
 
 export function SummaryScreen({
@@ -16,22 +17,23 @@ export function SummaryScreen({
 }) {
   return (
     <div className="app px-4">
-      <header className="pt-10">
-        <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">Oppsummering</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight text-foreground">
+      <header className="min-w-0 pt-5">
+        <BackLink />
+        <p className="display mt-5 text-[11px] tracking-[0.28em] text-primary">Oppsummering</p>
+        <h1 className="display mt-1 truncate text-5xl leading-none text-foreground">
           {weekdayLabel}
         </h1>
-        <p className="text-lg text-muted-foreground">{title}</p>
+        <p className="truncate text-lg text-muted-foreground">{title}</p>
       </header>
 
-      <dl className="mt-8 space-y-2">
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4">
-          <dt className="text-muted-foreground">Øvelser fullført</dt>
-          <dd className="text-xl font-semibold text-foreground">{completed}</dd>
+      <dl className="mt-8 min-w-0 space-y-2">
+        <div className="flex min-w-0 items-center justify-between gap-3 border border-border bg-card p-4">
+          <dt className="truncate text-muted-foreground">Øvelser fullført</dt>
+          <dd className="display shrink-0 text-2xl text-foreground">{completed}</dd>
         </div>
-        <div className="flex items-center justify-between rounded-2xl border border-border bg-card p-4">
-          <dt className="text-muted-foreground">Total tid</dt>
-          <dd className="font-mono text-xl font-semibold tabular-nums text-foreground">
+        <div className="flex min-w-0 items-center justify-between gap-3 border border-border bg-card p-4">
+          <dt className="truncate text-muted-foreground">Total tid</dt>
+          <dd className="shrink-0 font-mono text-xl font-semibold tabular-nums text-foreground">
             {formatElapsed(elapsedMs)}
           </dd>
         </div>

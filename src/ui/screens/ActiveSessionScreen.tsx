@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { formatLoad } from "../../domain/format";
 import { EXERCISE_TYPES } from "../../data/exercises";
+import { formatLoad } from "../../domain/format";
 import type { WorkoutDay } from "../../domain/types";
 import type { ActiveSession } from "../../session/types";
+import { BackLink } from "../components/BackLink";
 import { BottomAction } from "../components/BottomAction";
 import { ExerciseImage } from "../components/ExerciseImage";
 import { MasterTimer } from "../components/MasterTimer";
@@ -38,51 +39,56 @@ export function ActiveSessionScreen({
   const [sheetOpen, setSheetOpen] = useState(false);
 
   const currentId = session.remainingExerciseIds[0];
-  const exercise = day.exercises.find((e) => e.id === currentId);
+  const exercise = day.exercises.find((item) => item.id === currentId);
   if (!exercise) return null;
   const type = EXERCISE_TYPES[exercise.typeId];
 
   const nextId = session.remainingExerciseIds[1];
-  const next = day.exercises.find((e) => e.id === nextId);
+  const next = day.exercises.find((item) => item.id === nextId);
 
   const showUndo = session.undo !== null && now < session.undo.expiresAt;
 
   return (
     <div className="app px-4">
-      <header className="flex items-start justify-between pt-6">
-        <div>
-          <p className="text-[11px] uppercase tracking-[0.25em] text-muted-foreground">
+      <header className="flex min-w-0 items-start justify-between gap-3 pt-5">
+        <div className="min-w-0">
+          <BackLink />
+          <p className="display mt-3 truncate text-[11px] tracking-[0.24em] text-muted-foreground">
             {day.weekdayLabel}
           </p>
-          <h1 className="text-xl font-semibold tracking-tight text-foreground">{day.title}</h1>
+          <h1 className="display truncate text-2xl leading-none text-foreground">{day.title}</h1>
         </div>
         <MasterTimer elapsedMs={elapsedMs} />
       </header>
 
-      <section className="mt-5">
+      <section className="mt-5 min-w-0">
         <ExerciseImage src={type.imagePath} alt={type.name} />
-        <h2 className="mt-4 text-2xl font-semibold tracking-tight text-foreground">{type.name}</h2>
-        <p className="text-lg text-muted-foreground">{formatLoad(exercise.load)}</p>
+        <h2 className="display mt-4 truncate text-4xl leading-none text-foreground">{type.name}</h2>
+        <p className="mt-1 truncate text-lg text-muted-foreground">{formatLoad(exercise.load)}</p>
       </section>
 
       {exercise.load.kind === "activityTimer" && (
-        <div className="mt-4">
+        <div className="mt-4 min-w-0">
           <StretchingTimer
             state={session.activityTimerState}
             minutes={exercise.load.minutes}
             now={now}
-            onStart={() => onStartActivityTimer((exercise.load as { minutes: number }).minutes)}
+            onStart={() => {
+              if (exercise.load.kind === "activityTimer") {
+                onStartActivityTimer(exercise.load.minutes);
+              }
+            }}
           />
         </div>
       )}
 
       {session.missedRestCue && (
-        <p className="mt-4 rounded-2xl border border-primary bg-card p-4 text-center text-lg font-semibold text-primary">
-          START NESTE SETT
+        <p className="display mt-4 border border-primary bg-card p-4 text-center text-xl text-primary">
+          Start neste sett
         </p>
       )}
 
-      <div className="mt-4">
+      <div className="mt-4 min-w-0">
         <RestButtons
           restEndsAt={session.restEndsAt}
           now={now}
@@ -92,23 +98,23 @@ export function ActiveSessionScreen({
       </div>
 
       {next && (
-        <p className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-4 min-w-0 truncate text-sm text-muted-foreground">
           Neste: {EXERCISE_TYPES[next.typeId].name} · {formatLoad(next.load)}
         </p>
       )}
 
-      <div className="mt-4 flex items-center justify-between gap-3">
+      <div className="mt-4 flex min-w-0 items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => setSheetOpen(true)}
-          className="rounded-full border border-border bg-card px-4 py-2 text-sm font-medium text-foreground"
+          className="display min-h-11 border border-border bg-card px-4 text-sm tracking-[0.14em] text-foreground"
         >
           Hele økten
         </button>
         <button
           type="button"
           onClick={onReset}
-          className="text-sm text-muted-foreground underline underline-offset-4"
+          className="truncate text-sm text-muted-foreground underline underline-offset-4"
         >
           Nullstill aktiv økt
         </button>
@@ -118,7 +124,7 @@ export function ActiveSessionScreen({
         <button
           type="button"
           onClick={onUndo}
-          className="mt-4 w-full rounded-2xl border border-border bg-card p-3 text-sm font-medium text-foreground"
+          className="mt-4 w-full border border-border bg-card p-3 text-sm font-semibold text-foreground"
         >
           Angre siste «Øvelse ferdig»
         </button>

@@ -14,9 +14,14 @@ export function restOverlayLabel(
 }
 
 export function RestOverlay({ label }: { label: string }) {
+  const compact = label.length > 2;
   return (
-    <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center bg-background/85">
-      <div className="animate-in fade-in zoom-in text-center text-6xl font-bold tracking-tight text-primary duration-200">
+    <div className="pointer-events-none fixed inset-0 z-40 flex items-center justify-center overflow-x-clip bg-background/85 px-4">
+      <div
+        className={`display animate-in fade-in zoom-in max-w-full text-center text-primary duration-200 ${
+          compact ? "text-4xl leading-tight" : "text-7xl leading-none"
+        }`}
+      >
         {label}
       </div>
     </div>
