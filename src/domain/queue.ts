@@ -6,10 +6,8 @@ export function jumpToExercise(remaining: string[], targetId: string): string[] 
   const idx = remaining.indexOf(targetId);
   if (idx < 0) return remaining;
 
-  const selected = remaining[idx];
-  const skipped = remaining.slice(0, idx);
-  const after = remaining.slice(idx + 1);
-  return [selected, ...skipped, ...after];
+  const selected = remaining[idx]!;
+
 }
 
 export function completeCurrent(remaining: string[]): string[] {
