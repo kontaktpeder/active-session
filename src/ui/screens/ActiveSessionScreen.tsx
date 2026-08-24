@@ -3,7 +3,7 @@ import { EXERCISE_TYPES } from "../../data/exercises";
 import { formatLoad } from "../../domain/format";
 import type { WorkoutDay } from "../../domain/types";
 import type { ActiveSession } from "../../session/types";
-import { SheetBody } from "../components/AppSheet";
+import { BackLink } from "../components/BackLink";
 import { BottomAction } from "../components/BottomAction";
 import { ExerciseImage } from "../components/ExerciseImage";
 import { ExerciseInfoSheet } from "../components/ExerciseInfoSheet";
@@ -69,17 +69,11 @@ export function ActiveSessionScreen({
   const showUndo = session.undo !== null && now < session.undo.expiresAt;
 
   return (
-    <>
-      <SheetBody
-        footer={
-          <BottomAction placement="sheet" onClick={onComplete}>
-            Øvelse ferdig
-          </BottomAction>
-        }
-      >
-      <header className="flex min-w-0 items-start justify-between gap-3 pt-2">
+    <div className="app px-4">
+      <header className="flex min-w-0 items-start justify-between gap-3 pt-5">
         <div className="min-w-0">
-          <p className="display truncate text-[11px] tracking-[0.24em] text-muted-foreground">
+          <BackLink />
+          <p className="display mt-3 truncate text-[11px] tracking-[0.24em] text-muted-foreground">
             {day.weekdayLabel}
           </p>
           <h1 className="display truncate text-2xl leading-none text-foreground">{day.title}</h1>
@@ -134,7 +128,7 @@ export function ActiveSessionScreen({
         </p>
       )}
 
-      <div className="mt-4 flex min-w-0 items-center justify-between gap-3 pb-4">
+      <div className="mt-4 flex min-w-0 items-center justify-between gap-3">
         <button
           type="button"
           onClick={() => {
@@ -158,13 +152,12 @@ export function ActiveSessionScreen({
         <button
           type="button"
           onClick={onUndo}
-          className="mb-4 w-full border border-border bg-card p-3 text-sm font-semibold text-foreground"
+          className="mt-4 w-full border border-border bg-card p-3 text-sm font-semibold text-foreground"
         >
           Angre siste «Øvelse ferdig»
         </button>
       )}
 
-    </SheetBody>
       {infoOpen && (
         <ExerciseInfoSheet
           typeId={exercise.typeId}
@@ -184,6 +177,8 @@ export function ActiveSessionScreen({
           onClose={() => setSheetOpen(false)}
         />
       )}
-    </>
+
+      <BottomAction onClick={onComplete}>Øvelse ferdig</BottomAction>
+    </div>
   );
 }
