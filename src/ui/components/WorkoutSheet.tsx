@@ -64,7 +64,7 @@ export function WorkoutSheet({
                       ? "border-primary bg-card"
                       : done
                         ? "border-border bg-card opacity-40"
-                        : "border-border bg-card active:bg-accent"
+                        : "border-border bg-card"
                   }`}
                 >
                   <span className="min-w-0">
