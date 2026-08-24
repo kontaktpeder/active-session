@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { EXERCISE_TYPES } from "../../data/exercises";
 import { formatLoad } from "../../domain/format";
-import type { WeekdayId, WorkoutDay } from "../../domain/types";
+import type { ExerciseTypeId, Load, WeekdayId, WorkoutDay } from "../../domain/types";
 import { SheetBody } from "../components/AppSheet";
 import { BottomAction } from "../components/BottomAction";
+import { ExerciseInfoSheet } from "../components/ExerciseInfoSheet";
 
 export function PreSessionScreen({
   day,
@@ -16,12 +18,15 @@ export function PreSessionScreen({
   conflictDayId?: WeekdayId | undefined;
   onStart: () => void;
 }) {
+  const [info, setInfo] = useState<{ typeId: ExerciseTypeId; load: Load } | null>(null);
+
   return (
-    <SheetBody
-      footer={
-        day.isRestDay ? undefined : <BottomAction placement="sheet" onClick={onStart}>Start økt</BottomAction>
-      }
-    >
+    <>
+      <SheetBody
+        footer={
+          day.isRestDay ? undefined : <BottomAction placement="sheet" onClick={onStart}>Start økt</BottomAction>
+        }
+      >
       <header className="min-w-0 pt-2 pb-1">
         <p className="display text-[11px] tracking-[0.28em] text-primary">Økt</p>
         <h1 className="display mt-1 truncate text-5xl leading-none text-foreground">
@@ -53,36 +58,47 @@ export function PreSessionScreen({
           {day.exercises.map((exercise, index) => {
             const type = EXERCISE_TYPES[exercise.typeId];
             return (
-              <li
-                key={exercise.id}
-                className="flex min-w-0 items-center gap-3 border border-border bg-card p-3"
-              >
-                <span className="w-6 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
-                  {String(index + 1).padStart(2, "0")}
-                </span>
-                <img
-                  src={type.imagePath}
-                  alt=""
-                  loading="lazy"
-                  decoding="async"
-                  className="h-11 w-11 shrink-0 object-contain"
-                  onError={(event) => {
-                    event.currentTarget.src = "/fallback.svg";
-                  }}
-                />
-                <span className="min-w-0 flex-1">
-                  <span className="display block truncate text-base leading-tight text-foreground">
-                    {type.name}
+              <li key={exercise.id} className="min-w-0">
+                <button
+                  type="button"
+                  onClick={() => setInfo({ typeId: exercise.typeId, load: exercise.load })}
+                  className="flex w-full min-w-0 items-center gap-3 border border-border bg-card p-3 text-left transition-colors duration-200 ease-out active:bg-accent"
+                >
+                  <span className="w-6 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">
+                    {String(index + 1).padStart(2, "0")}
                   </span>
-                  <span className="block truncate text-sm text-muted-foreground">
-                    {formatLoad(exercise.load)}
+                  <img
+                    src={type.imagePath}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    className="h-11 w-11 shrink-0 object-contain"
+                    onError={(event) => {
+                      event.currentTarget.src = "/fallback.svg";
+                    }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="display block truncate text-base leading-tight text-foreground">
+                      {type.name}
+                    </span>
+                    <span className="block truncate text-sm text-muted-foreground">
+                      {formatLoad(exercise.load)}
+                    </span>
                   </span>
-                </span>
+                </button>
               </li>
             );
           })}
         </ul>
       )}
-    </SheetBody>
+      </SheetBody>
+      {info && (
+        <ExerciseInfoSheet
+          typeId={info.typeId}
+          load={info.load}
+          onClose={() => setInfo(null)}
+        />
+      )}
+    </>
   );
 }

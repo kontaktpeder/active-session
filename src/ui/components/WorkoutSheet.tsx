@@ -1,22 +1,24 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { formatLoad } from "../../domain/format";
 import { EXERCISE_TYPES } from "../../data/exercises";
 import type { WorkoutDay } from "../../domain/types";
 import { AppSheet, SheetBody } from "./AppSheet";
+import { ExerciseInfoSheet } from "./ExerciseInfoSheet";
 
 export function WorkoutSheet({
   day,
   activeId,
   completedIds,
-  onSelect,
+  onJump,
   onClose,
 }: {
   day: WorkoutDay;
   activeId: string | undefined;
   completedIds: string[];
-  onSelect: (id: string) => void;
+  onJump: (id: string) => void;
   onClose: () => void;
 }) {
+  const [infoId, setInfoId] = useState<string | null>(null);
   const activeRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -26,13 +28,21 @@ export function WorkoutSheet({
     return () => window.cancelAnimationFrame(frame);
   }, [activeId]);
 
+  const infoExercise = infoId
+    ? day.exercises.find((exercise) => exercise.id === infoId)
+    : undefined;
+  const infoDone = infoExercise ? completedIds.includes(infoExercise.id) : false;
+  const infoActive = infoExercise?.id === activeId;
+  const canJump = Boolean(infoExercise && !infoDone && !infoActive);
+
   return (
-    <AppSheet
-      onClose={onClose}
-      detents={["half", "full"]}
-      initialDetent="half"
-      zClassName="z-[55]"
-    >
+    <>
+      <AppSheet
+        onClose={onClose}
+        detents={["half", "full"]}
+        initialDetent="half"
+        zClassName="z-[55]"
+      >
       <SheetBody>
         <h2 className="display pt-1 text-3xl text-foreground">Hele økten</h2>
         <p className="mt-1 text-sm text-muted-foreground">
@@ -48,8 +58,7 @@ export function WorkoutSheet({
                 <button
                   type="button"
                   ref={active ? activeRef : undefined}
-                  disabled={done}
-                  onClick={() => onSelect(exercise.id)}
+                  onClick={() => setInfoId(exercise.id)}
                   className={`flex w-full min-w-0 items-center justify-between gap-3 border p-4 text-left transition-colors duration-200 ease-out ${
                     active
                       ? "border-primary bg-card"
@@ -75,6 +84,15 @@ export function WorkoutSheet({
           })}
         </ul>
       </SheetBody>
-    </AppSheet>
+      </AppSheet>
+      {infoExercise && (
+        <ExerciseInfoSheet
+          typeId={infoExercise.typeId}
+          load={infoExercise.load}
+          onClose={() => setInfoId(null)}
+          onJump={canJump ? () => onJump(infoExercise.id) : undefined}
+        />
+      )}
+    </>
   );
 }

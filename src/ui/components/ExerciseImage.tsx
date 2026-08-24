@@ -5,10 +5,12 @@ export function ExerciseImage({
   src,
   alt,
   priority = false,
+  onOpen,
 }: {
   src: string;
   alt: string;
   priority?: boolean;
+  onOpen?: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -18,9 +20,9 @@ export function ExerciseImage({
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => (onOpen ? onOpen() : setOpen(true))}
         className="block w-full min-w-0 overflow-hidden border border-border bg-card"
-        aria-label={`Vis ${alt} større`}
+        aria-label={onOpen ? `Hvordan og hvorfor: ${alt}` : `Vis ${alt} større`}
       >
         <img
           src={imageSrc}
@@ -34,7 +36,7 @@ export function ExerciseImage({
       </button>
 
       {open && (
-        <AppSheet onClose={() => setOpen(false)} size="hug" nest zClassName="z-[55]">
+        <AppSheet onClose={() => setOpen(false)} size="hug" nest zClassName="z-[70]">
           <SheetBody>
             <p className="display sr-only">{alt}</p>
             <button

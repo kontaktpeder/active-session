@@ -6,6 +6,7 @@ import type { ActiveSession } from "../../session/types";
 import { SheetBody } from "../components/AppSheet";
 import { BottomAction } from "../components/BottomAction";
 import { ExerciseImage } from "../components/ExerciseImage";
+import { ExerciseInfoSheet } from "../components/ExerciseInfoSheet";
 import { MasterTimer } from "../components/MasterTimer";
 import { RestButtons } from "../components/RestButtons";
 import { StretchingTimer } from "../components/StretchingTimer";
@@ -37,6 +38,7 @@ export function ActiveSessionScreen({
   onReset: () => void;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
 
   const currentId = session.remainingExerciseIds[0];
   const exercise = day.exercises.find((item) => item.id === currentId);
@@ -45,6 +47,10 @@ export function ActiveSessionScreen({
   const nextId = session.remainingExerciseIds[1];
   const next = day.exercises.find((item) => item.id === nextId);
   const nextImagePath = next ? EXERCISE_TYPES[next.typeId].imagePath : undefined;
+
+  useEffect(() => {
+    setInfoOpen(false);
+  }, [currentId]);
 
   useEffect(() => {
     if (!nextImagePath) return;
@@ -82,7 +88,12 @@ export function ActiveSessionScreen({
       </header>
 
       <section className="mt-5 min-w-0">
-        <ExerciseImage src={type.imagePath} alt={type.name} priority />
+        <ExerciseImage
+          src={type.imagePath}
+          alt={type.name}
+          priority
+          onOpen={() => setInfoOpen(true)}
+        />
         <h2 className="display mt-4 truncate text-4xl leading-none text-foreground">{type.name}</h2>
         <p className="mt-1 truncate text-lg text-muted-foreground">{formatLoad(exercise.load)}</p>
       </section>
@@ -126,7 +137,10 @@ export function ActiveSessionScreen({
       <div className="mt-4 flex min-w-0 items-center justify-between gap-3 pb-4">
         <button
           type="button"
-          onClick={() => setSheetOpen(true)}
+          onClick={() => {
+            setInfoOpen(false);
+            setSheetOpen(true);
+          }}
           className="display min-h-11 border border-border bg-card px-4 text-sm tracking-[0.14em] text-foreground"
         >
           Hele økten
@@ -151,12 +165,19 @@ export function ActiveSessionScreen({
       )}
 
     </SheetBody>
+      {infoOpen && (
+        <ExerciseInfoSheet
+          typeId={exercise.typeId}
+          load={exercise.load}
+          onClose={() => setInfoOpen(false)}
+        />
+      )}
       {sheetOpen && (
         <WorkoutSheet
           day={day}
           activeId={currentId}
           completedIds={session.completedExerciseIds}
-          onSelect={(id) => {
+          onJump={(id) => {
             onJump(id);
             setSheetOpen(false);
           }}
