@@ -166,7 +166,7 @@ function DayCard({
     <Link
       to="/okt/$dayId"
       params={{ dayId: day.id }}
-      className={`block min-w-0 overflow-hidden border p-4 transition-colors duration-200 ease-out active:bg-accent ${
+      className={`block min-w-0 overflow-hidden border p-4 transition-colors duration-200 ease-out ${
         isLive ? "border-primary bg-card" : isToday ? "border-primary bg-card" : "border-border bg-card"
       }`}
     >
