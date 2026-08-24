@@ -1,25 +1,53 @@
+import { useEffect, useRef } from "react";
+import {
+  Drawer,
+  DrawerClose,
+  DrawerContent,
+  DrawerDescription,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 import { formatLoad } from "../../domain/format";
 import { EXERCISE_TYPES } from "../../data/exercises";
 import type { WorkoutDay } from "../../domain/types";
 
 export function WorkoutSheet({
+  open,
   day,
   activeId,
   completedIds,
   onSelect,
-  onClose,
+  onOpenChange,
 }: {
+  open: boolean;
   day: WorkoutDay;
   activeId: string | undefined;
   completedIds: string[];
   onSelect: (id: string) => void;
-  onClose: () => void;
+  onOpenChange: (open: boolean) => void;
 }) {
+  const activeRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const frame = window.requestAnimationFrame(() => {
+      activeRef.current?.scrollIntoView({ block: "nearest", inline: "nearest" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [open, activeId]);
+
   return (
-    <div className="fixed inset-0 z-50 flex min-w-0 flex-col overflow-x-clip bg-background/95">
-      <div className="mx-auto w-full min-w-0 max-w-[430px] flex-1 overflow-x-clip overflow-y-auto px-4 pb-28 pt-[calc(env(safe-area-inset-top)+16px)]">
-        <h2 className="display text-3xl text-foreground">Hele økten</h2>
-        <ul className="mt-4 min-w-0 space-y-2">
+    <Drawer open={open} onOpenChange={onOpenChange}>
+      <DrawerContent className="h-[85dvh]">
+        <DrawerHeader>
+          <DrawerTitle>Hele økten</DrawerTitle>
+          <DrawerDescription>
+            {day.weekdayLabel} · {day.title}. Dra ned for å lukke.
+          </DrawerDescription>
+        </DrawerHeader>
+
+        <ul className="scroll-touch min-h-0 flex-1 space-y-2 overflow-y-auto px-4 pb-3">
           {day.exercises.map((exercise) => {
             const done = completedIds.includes(exercise.id);
             const active = exercise.id === activeId;
@@ -28,6 +56,7 @@ export function WorkoutSheet({
               <li key={exercise.id} className="min-w-0">
                 <button
                   type="button"
+                  ref={active ? activeRef : undefined}
                   disabled={done}
                   onClick={() => onSelect(exercise.id)}
                   className={`flex w-full min-w-0 items-center justify-between gap-3 border p-4 text-left transition-colors duration-200 ease-out ${
@@ -54,18 +83,18 @@ export function WorkoutSheet({
             );
           })}
         </ul>
-      </div>
-      <div className="bottom-action">
-        <div className="mx-auto w-full min-w-0 max-w-[430px]">
-          <button
-            type="button"
-            onClick={onClose}
-            className="display min-h-14 w-full border border-border bg-card text-lg tracking-[0.14em] text-foreground"
-          >
-            Lukk
-          </button>
-        </div>
-      </div>
-    </div>
+
+        <DrawerFooter>
+          <DrawerClose asChild>
+            <button
+              type="button"
+              className="display min-h-14 w-full border border-border bg-card text-lg tracking-[0.14em] text-foreground"
+            >
+              Lukk
+            </button>
+          </DrawerClose>
+        </DrawerFooter>
+      </DrawerContent>
+    </Drawer>
   );
 }

@@ -144,18 +144,17 @@ export function ActiveSessionScreen({
         </button>
       )}
 
-      {sheetOpen && (
-        <WorkoutSheet
-          day={day}
-          activeId={currentId}
-          completedIds={session.completedExerciseIds}
-          onSelect={(id) => {
-            onJump(id);
-            setSheetOpen(false);
-          }}
-          onClose={() => setSheetOpen(false)}
-        />
-      )}
+      <WorkoutSheet
+        open={sheetOpen}
+        day={day}
+        activeId={currentId}
+        completedIds={session.completedExerciseIds}
+        onSelect={(id) => {
+          onJump(id);
+          setSheetOpen(false);
+        }}
+        onOpenChange={setSheetOpen}
+      />
 
       <BottomAction onClick={onComplete}>Øvelse ferdig</BottomAction>
     </div>

@@ -14,7 +14,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 
 function NotFoundComponent() {
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+    <div className="flex h-full items-center justify-center bg-background px-4">
       <div className="max-w-md min-w-0 text-center">
         <h1 className="display text-7xl text-foreground">404</h1>
         <h2 className="display mt-4 text-2xl text-foreground">Siden finnes ikke</h2>
@@ -40,7 +40,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   }, [error]);
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-background px-4">
+    <div className="flex h-full items-center justify-center bg-background px-4">
       <div className="max-w-md min-w-0 text-center">
         <h1 className="display text-2xl text-foreground">Siden lastet ikke</h1>
         <p className="mt-2 text-sm text-muted-foreground">Noe gikk galt. Prøv på nytt eller gå til programmet.</p>
@@ -120,7 +120,9 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <div data-vaul-drawer-wrapper="" className="h-full overflow-hidden bg-background">
+        <Outlet />
+      </div>
     </QueryClientProvider>
   );
 }

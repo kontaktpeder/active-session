@@ -1,4 +1,11 @@
 import { useState } from "react";
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+} from "@/components/ui/drawer";
 
 export function ExerciseImage({
   src,
@@ -11,6 +18,7 @@ export function ExerciseImage({
 }) {
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
+  const imageSrc = failed ? "/fallback.svg" : src;
 
   return (
     <>
@@ -18,10 +26,10 @@ export function ExerciseImage({
         type="button"
         onClick={() => setOpen(true)}
         className="block w-full min-w-0 overflow-hidden border border-border bg-card"
-        aria-label={`Vis ${alt} i fullskjerm`}
+        aria-label={`Vis ${alt} større`}
       >
         <img
-          src={failed ? "/fallback.svg" : src}
+          src={imageSrc}
           alt={alt}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
@@ -31,20 +39,26 @@ export function ExerciseImage({
         />
       </button>
 
-      {open && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setOpen(false)}
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-x-clip bg-background/95 p-4"
-        >
-          <img
-            src={failed ? "/fallback.svg" : src}
-            alt={alt}
-            className="max-h-full w-full max-w-lg object-contain"
-          />
-        </div>
-      )}
+      <Drawer open={open} onOpenChange={setOpen}>
+        <DrawerContent className="h-auto max-h-[88dvh]">
+          <DrawerHeader className="sr-only">
+            <DrawerTitle>{alt}</DrawerTitle>
+            <DrawerDescription>Dra ned eller trykk utenfor for å lukke.</DrawerDescription>
+          </DrawerHeader>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            className="flex min-h-0 flex-1 items-center justify-center px-4 pb-6 pt-2"
+            aria-label="Lukk bilde"
+          >
+            <img
+              src={imageSrc}
+              alt=""
+              className="max-h-[70dvh] w-full object-contain"
+            />
+          </button>
+        </DrawerContent>
+      </Drawer>
     </>
   );
 }
