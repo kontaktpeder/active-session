@@ -1,5 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="400" height="300">
-  <rect width="400" height="300" fill="#0B0D10"/>
-  <g fill="none" stroke="#7DD3A0" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"><circle cx="200" cy="92" r="22"/><path d="M200 114v62M200 132l-46 20M200 132l46 20M200 176l-32 52M200 176l32 52"/></g>
-  <text x="200" y="272" text-anchor="middle" font-family="system-ui, sans-serif" font-size="22" font-weight="600" fill="#9AA4B2">BOX JUMPS</text>
-</svg>

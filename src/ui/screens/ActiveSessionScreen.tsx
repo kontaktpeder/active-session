@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { EXERCISE_TYPES } from "../../data/exercises";
 import { formatLoad } from "../../domain/format";
 import type { WorkoutDay } from "../../domain/types";
@@ -40,11 +40,25 @@ export function ActiveSessionScreen({
 
   const currentId = session.remainingExerciseIds[0];
   const exercise = day.exercises.find((item) => item.id === currentId);
-  if (!exercise) return null;
-  const type = EXERCISE_TYPES[exercise.typeId];
+  const type = exercise ? EXERCISE_TYPES[exercise.typeId] : undefined;
 
   const nextId = session.remainingExerciseIds[1];
   const next = day.exercises.find((item) => item.id === nextId);
+  const nextImagePath = next ? EXERCISE_TYPES[next.typeId].imagePath : undefined;
+
+  useEffect(() => {
+    if (!nextImagePath) return;
+    const link = document.createElement("link");
+    link.rel = "preload";
+    link.as = "image";
+    link.href = nextImagePath;
+    document.head.appendChild(link);
+    return () => {
+      link.remove();
+    };
+  }, [nextImagePath]);
+
+  if (!exercise || !type) return null;
 
   const showUndo = session.undo !== null && now < session.undo.expiresAt;
 
@@ -62,7 +76,7 @@ export function ActiveSessionScreen({
       </header>
 
       <section className="mt-5 min-w-0">
-        <ExerciseImage src={type.imagePath} alt={type.name} />
+        <ExerciseImage src={type.imagePath} alt={type.name} priority />
         <h2 className="display mt-4 truncate text-4xl leading-none text-foreground">{type.name}</h2>
         <p className="mt-1 truncate text-lg text-muted-foreground">{formatLoad(exercise.load)}</p>
       </section>

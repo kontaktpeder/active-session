@@ -1,6 +1,14 @@
 import { useState } from "react";
 
-export function ExerciseImage({ src, alt }: { src: string; alt: string }) {
+export function ExerciseImage({
+  src,
+  alt,
+  priority = false,
+}: {
+  src: string;
+  alt: string;
+  priority?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
 
@@ -15,6 +23,9 @@ export function ExerciseImage({ src, alt }: { src: string; alt: string }) {
         <img
           src={failed ? "/fallback.svg" : src}
           alt={alt}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          decoding={priority ? "sync" : "async"}
           onError={() => setFailed(true)}
           className="aspect-[4/3] h-auto w-full max-w-full object-contain"
         />

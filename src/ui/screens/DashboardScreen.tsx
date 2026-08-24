@@ -69,6 +69,19 @@ export function DashboardScreen() {
           ))}
         </div>
       </section>
+
+      <section className="mt-10 min-w-0 border-t border-border pt-6">
+        <h2 className="display text-[11px] tracking-[0.24em] text-muted-foreground">Om appen</h2>
+        <p className="mt-3 text-sm text-muted-foreground">Exercise data by RepDB</p>
+        <a
+          href="https://repdb.co"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-1 inline-block text-sm text-primary underline underline-offset-4"
+        >
+          https://repdb.co
+        </a>
+      </section>
     </div>
   );
 }
@@ -129,6 +142,8 @@ function DayCard({
                 <img
                   src={type.imagePath}
                   alt=""
+                  loading="lazy"
+                  decoding="async"
                   className="h-8 w-8 shrink-0 object-contain"
                   onError={(event) => {
                     event.currentTarget.src = "/fallback.svg";

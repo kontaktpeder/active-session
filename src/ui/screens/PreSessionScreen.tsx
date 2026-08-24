@@ -61,6 +61,8 @@ export function PreSessionScreen({
                   <img
                     src={type.imagePath}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="h-11 w-11 shrink-0 object-contain"
                     onError={(event) => {
                       event.currentTarget.src = "/fallback.svg";
