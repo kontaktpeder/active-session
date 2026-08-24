@@ -84,7 +84,7 @@ function rubber(overshoot: number, dimension = 200, constant = 0.55): number {
 }
 
 function resistDragY(raw: number, frameH: number): number {
-  if (raw < 0) return rubber(raw);
+  if (raw < 0) return 0;
   if (raw > frameH) return frameH + rubber(raw - frameH, 160, 0.4);
   return raw;
 }
@@ -504,26 +504,24 @@ export function AppSheet({
 
       <div
         ref={frameRef}
-        className={cn(
-          "absolute inset-0 flex justify-center overflow-hidden pointer-events-none",
-          useSheetLayout ? "items-stretch" : "items-end",
-        )}
+        className="absolute inset-0 overflow-hidden pointer-events-none"
         style={{
           paddingTop: "max(0.5rem, env(safe-area-inset-top))",
           paddingLeft: "env(safe-area-inset-left)",
           paddingRight: "env(safe-area-inset-right)",
         }}
       >
-        <div
-          ref={sheetLayerRef}
-          className={cn(
-            "relative z-10 flex w-full min-h-0 max-w-[430px]",
-            !isRecessed && "pointer-events-auto",
-            useSheetLayout ? "h-full max-h-full self-stretch" : "h-auto max-h-[min(92dvh,100%)]",
-          )}
-          style={{ transform: `translate3d(0, ${initialY}px, 0)` }}
-          onClick={(event) => event.stopPropagation()}
-        >
+        <div className="absolute inset-x-0 bottom-0 top-0 flex justify-center">
+          <div
+            ref={sheetLayerRef}
+            className={cn(
+              "relative z-10 flex w-full min-h-0 max-w-[430px]",
+              !isRecessed && "pointer-events-auto",
+              useSheetLayout ? "h-full max-h-full" : "mt-auto h-auto max-h-[min(92dvh,100%)]",
+            )}
+            style={{ transform: `translate3d(0, ${initialY}px, 0)` }}
+            onClick={(event) => event.stopPropagation()}
+          >
           <div
             className={cn("flex min-h-0 w-full origin-top", useSheetLayout ? "h-full" : "h-auto max-h-full")}
             style={{
@@ -538,7 +536,7 @@ export function AppSheet({
               className={cn(
                 "relative flex min-h-0 w-full flex-col overflow-hidden border border-border bg-background",
                 "rounded-t-[10px] rounded-b-none",
-                useSheetLayout ? "h-full" : "h-auto max-h-full",
+                useSheetLayout ? "h-full min-h-full" : "h-auto max-h-full",
                 className,
               )}
             >
@@ -558,6 +556,7 @@ export function AppSheet({
               </div>
               {children}
             </div>
+          </div>
           </div>
         </div>
       </div>
