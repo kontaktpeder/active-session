@@ -72,9 +72,27 @@ function normalizeDetents(detents: SheetDetent[]): SheetDetent[] {
   return ordered.length ? ordered : ["full"];
 }
 
-function writeSheetY(el: HTMLElement | null, y: number) {
+function writeSheetPosition(
+  el: HTMLElement | null,
+  y: number,
+  frameH: number,
+  layout: "sheet" | "hug",
+  peekY: number,
+) {
   if (!el) return;
-  el.style.transform = `translate3d(0, ${y}px, 0)`;
+  if (layout === "hug") {
+    el.style.height = "auto";
+    el.style.maxHeight = `${frameH}px`;
+    el.style.transform = `translate3d(-50%, ${Math.max(0, y)}px, 0)`;
+    return;
+  }
+  if (y <= peekY) {
+    el.style.height = `${Math.max(0, frameH - y)}px`;
+    el.style.transform = "translate3d(-50%, 0px, 0)";
+    return;
+  }
+  el.style.height = `${Math.max(0, frameH - peekY)}px`;
+  el.style.transform = `translate3d(-50%, ${y - peekY}px, 0)`;
 }
 
 function rubber(overshoot: number, dimension = 200, constant = 0.55): number {
@@ -115,6 +133,7 @@ export function AppSheet({
   const cardRef = useRef<HTMLDivElement>(null);
   const sheetLayerRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
+  const slotRef = useRef<HTMLDivElement>(null);
   const gestureRef = useRef<GestureState | null>(null);
   const detentRef = useRef<SheetDetent>("full");
   const canDragRef = useRef(true);
@@ -122,6 +141,8 @@ export function AppSheet({
   const multiDetentRef = useRef(false);
   const nestIdRef = useRef<number | null>(null);
   const yRef = useRef(typeof window !== "undefined" ? window.innerHeight : 640);
+  const peekYRef = useRef(0);
+  const layoutKindRef = useRef<"sheet" | "hug">("sheet");
   const settleDragRef = useRef<(vy: number) => void>(() => {});
   const cancelSpringRef = useRef<(() => void) | null>(null);
   const animatingRef = useRef(false);
@@ -175,10 +196,14 @@ export function AppSheet({
   const isRecessed = nestEnabled && myNestIndex >= 0 && nestDepth > myNestIndex + 1;
 
   const canDrag = !flyingOut && !isRecessed;
+  const useSheetLayout = size === "sheet";
+  const peekY = useSheetLayout && multiDetent ? yForDetent("half", frameH) : 0;
   canDragRef.current = canDrag;
   flyingOutRef.current = flyingOut;
   frameHRef.current = frameH;
   multiDetentRef.current = multiDetent;
+  peekYRef.current = peekY;
+  layoutKindRef.current = useSheetLayout ? "sheet" : "hug";
 
   useEffect(() => {
     const id = window.requestAnimationFrame(() => setBackdropOpen(true));
@@ -186,7 +211,7 @@ export function AppSheet({
   }, []);
 
   useEffect(() => {
-    const el = frameRef.current;
+    const el = slotRef.current;
     if (!el) return;
     const measure = () => setFrameH(el.clientHeight || window.innerHeight);
     measure();
@@ -207,7 +232,13 @@ export function AppSheet({
 
   const setY = (y: number) => {
     yRef.current = y;
-    writeSheetY(sheetLayerRef.current, y);
+    writeSheetPosition(
+      sheetLayerRef.current,
+      y,
+      frameHRef.current,
+      layoutKindRef.current,
+      peekYRef.current,
+    );
   };
 
   const stopSpring = () => {
@@ -477,8 +508,13 @@ export function AppSheet({
     };
   }, [portalHost]);
 
-  const useSheetLayout = size === "sheet";
   const initialY = yRef.current;
+  const layerHeight = useSheetLayout
+    ? Math.max(0, frameH - Math.min(initialY, peekY))
+    : "auto";
+  const layerTranslate = useSheetLayout
+    ? Math.max(0, initialY - peekY)
+    : Math.max(0, initialY);
   const recessTransform = isRecessed
     ? `translate3d(0, ${NEST_RECESS_Y_PX}px, 0) scale(${NEST_RECESS_SCALE})`
     : "translate3d(0, 0, 0) scale(1)";
@@ -504,59 +540,61 @@ export function AppSheet({
 
       <div
         ref={frameRef}
-        className="absolute inset-0 overflow-hidden pointer-events-none"
+        className="absolute inset-0 flex flex-col overflow-hidden pointer-events-none"
         style={{
           paddingTop: "max(0.5rem, env(safe-area-inset-top))",
           paddingLeft: "env(safe-area-inset-left)",
           paddingRight: "env(safe-area-inset-right)",
         }}
       >
-        <div className="absolute inset-x-0 bottom-0 top-0 flex justify-center">
+        <div ref={slotRef} className="relative min-h-0 flex-1">
           <div
             ref={sheetLayerRef}
             className={cn(
-              "relative z-10 flex w-full min-h-0 max-w-[430px]",
+              "absolute bottom-0 left-1/2 z-10 flex w-full max-w-[430px] flex-col",
               !isRecessed && "pointer-events-auto",
-              useSheetLayout ? "h-full max-h-full" : "mt-auto h-auto max-h-[min(92dvh,100%)]",
             )}
-            style={{ transform: `translate3d(0, ${initialY}px, 0)` }}
+            style={{
+              height: layerHeight,
+              maxHeight: frameH,
+              transform: `translate3d(-50%, ${layerTranslate}px, 0)`,
+            }}
             onClick={(event) => event.stopPropagation()}
           >
-          <div
-            className={cn("flex min-h-0 w-full origin-top", useSheetLayout ? "h-full" : "h-auto max-h-full")}
-            style={{
-              transform: recessTransform,
-              transition: isRecessed ? "none" : `transform ${NEST_RECESS_MS}ms ${NEST_RECESS_EASE}`,
-            }}
-          >
             <div
-              ref={cardRef}
-              role="dialog"
-              aria-modal={!isRecessed}
-              className={cn(
-                "relative flex min-h-0 w-full flex-col overflow-hidden border border-border bg-background",
-                "rounded-t-[10px] rounded-b-none",
-                useSheetLayout ? "h-full min-h-full" : "h-auto max-h-full",
-                className,
-              )}
+              className="flex h-full min-h-0 w-full origin-top flex-col"
+              style={{
+                transform: recessTransform,
+                transition: isRecessed ? "none" : `transform ${NEST_RECESS_MS}ms ${NEST_RECESS_EASE}`,
+              }}
             >
               <div
-                data-sheet-grabber
-                className="relative z-30 flex shrink-0 items-center justify-center px-3 pt-2 pb-1"
-                style={{ touchAction: "none" }}
+                ref={cardRef}
+                role="dialog"
+                aria-modal={!isRecessed}
+                className={cn(
+                  "relative flex h-full min-h-0 w-full flex-col overflow-hidden border border-border bg-background",
+                  "rounded-t-[10px] rounded-b-none",
+                  className,
+                )}
               >
-                <button
-                  type="button"
-                  className="flex flex-1 items-center justify-center py-3 touch-none"
-                  aria-label="Dra arket ned for å lukke"
-                  tabIndex={-1}
+                <div
+                  data-sheet-grabber
+                  className="relative z-30 flex shrink-0 items-center justify-center px-3 pt-2 pb-1"
+                  style={{ touchAction: "none" }}
                 >
-                  <span className="block h-1.5 w-12 rounded-full bg-muted-foreground" />
-                </button>
+                  <button
+                    type="button"
+                    className="flex flex-1 items-center justify-center py-3 touch-none"
+                    aria-label="Dra arket ned for å lukke"
+                    tabIndex={-1}
+                  >
+                    <span className="block h-1.5 w-12 rounded-full bg-muted-foreground" />
+                  </button>
+                </div>
+                {children}
               </div>
-              {children}
             </div>
-          </div>
           </div>
         </div>
       </div>
